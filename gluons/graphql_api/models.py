@@ -2,7 +2,7 @@ from django.conf import settings
 from django.db import models
 from django.core.validators import MaxValueValidator
 
-# Create your models here.
+# sample models
 class Link(models.Model):
     url = models.URLField()
     description = models.TextField(blank=True)
@@ -16,7 +16,7 @@ class Vote(models.Model):
     link = models.ForeignKey('graphql_api.Link', related_name='votes', on_delete=models.CASCADE)
 
 
-
+# gluons models
 class Quark(models.Model):
     name = models.CharField(max_length=255,blank=False)
     # Don't make it URLField: image_path could be relative path like '/img/hoge.png'.
@@ -37,7 +37,29 @@ class Quark(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     posted_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, related_name='posted_quarks', on_delete=models.CASCADE)
     last_modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, related_name='modified_quarks', on_delete=models.CASCADE)
-    quark_type_id = models.ForeignKey('graphql_api.QuarkType', related_name='quarks', on_delete=models.CASCADE)
+    quark_type = models.ForeignKey('graphql_api.QuarkType', related_name='quarks', on_delete=models.CASCADE)
+
+
+class Gluon(models.Model):
+    relation = models.TextField(max_length=255,blank=False)
+    prefix = models.TextField(max_length=255,blank=True)
+    suffix = models.TextField(max_length=255,blank=True)
+    start = models.DateField(null=True,blank=True)
+    end = models.DateField(null=True,blank=True)
+    start_accuracy = models.CharField(max_length=10,blank=True)
+    end_accuracy = models.CharField(max_length=10,blank=True)
+    is_momentary = models.BooleanField(default=False,blank=True)
+    url = models.URLField(blank=True)
+    is_private = models.BooleanField(default=False,blank=True)
+    is_exclusive = models.BooleanField(default=True,blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    posted_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, related_name='posted_gluons', on_delete=models.CASCADE)
+    last_modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, related_name='modified_gluons', on_delete=models.CASCADE)
+    gluon_type = models.ForeignKey('graphql_api.GluonType', related_name='gluons', on_delete=models.CASCADE)
+    subject_quark = models.ForeignKey('graphql_api.Quark', related_name='havings', on_delete=models.CASCADE)
+    object_quark = models.ForeignKey('graphql_api.Quark', related_name='belongings', on_delete=models.CASCADE)
+
 
 class QuarkType(models.Model):
     name = models.CharField(max_length=255,blank=False)
@@ -47,6 +69,14 @@ class QuarkType(models.Model):
     start_prop = models.CharField(max_length=255,blank=False)
     end_prop = models.CharField(max_length=255,blank=False)
     has_gender = models.BooleanField(default=False,blank=True)
+    sort = models.IntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+class GluonType(models.Model):
+    name = models.CharField(max_length=255,blank=False)
+    caption = models.CharField(max_length=255,blank=False)
+    caption_ja = models.CharField(max_length=255,blank=False)
     sort = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
