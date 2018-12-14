@@ -81,5 +81,33 @@ class GluonType(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+class QuarkProperty(models.Model):
+    name = models.CharField(max_length=255,blank=False)
+    caption = models.CharField(max_length=255,blank=False)
+    caption_ja = models.CharField(max_length=255,blank=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+class QtypeProperty(models.Model):
+    is_required = models.BooleanField(default=False,blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    quark_type = models.ForeignKey('graphql_api.QuarkType', related_name='having_quark_properties', on_delete=models.CASCADE)
+    quark_property = models.ForeignKey('graphql_api.QuarkProperty', related_name='belonging_quark_types', on_delete=models.CASCADE)
+
+class QpropertyType(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    quark_property = models.ForeignKey('graphql_api.QuarkProperty', related_name='having_quark_types', on_delete=models.CASCADE)
+    quark_type = models.ForeignKey('graphql_api.QuarkType', related_name='belonging_quark_properties', on_delete=models.CASCADE)
+
+class QpropertyGtype(models.Model):
+    side = models.IntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    quark_property = models.ForeignKey('graphql_api.QuarkProperty', related_name='having_gluon_types', on_delete=models.CASCADE)
+    gluon_type = models.ForeignKey('graphql_api.GluonType', related_name='belonging_quark_properties', on_delete=models.CASCADE)
+
+
 
 
