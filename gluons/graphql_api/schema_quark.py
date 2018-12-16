@@ -44,6 +44,9 @@ class Query(graphene.ObjectType):
         skip=graphene.Int(),
         orderBy=graphene.String(),
     )
+    quark_count = graphene.Int(
+        search=graphene.String(),
+    )
 
     def resolve_quarks(self, info, search=None, first=None, skip=None, **kwargs):
         # The value sent with the search parameter will be in the args variable
@@ -67,6 +70,19 @@ class Query(graphene.ObjectType):
             qs = qs[:first]
 
         return qs
+
+    def resolve_quark_count(self, info, search=None, **kwargs):
+        # The value sent with the search parameter will be in the args variable
+        qs = Quark.objects.all()
+
+        if search:
+            filter = (
+                Q(url__icontains=search) |
+                Q(description__icontains=search)
+            )
+            qs = qs.filter(filter)
+
+        return qs.count()
 
     # Remove this Later ==============
     # Use them to slice the Django queryset
@@ -111,6 +127,36 @@ class Query(graphene.ObjectType):
     # ================================
 
 
+class CreateQuark(graphene.Mutation):
+    id = graphene.Int()
+    url = graphene.String()
+    description = graphene.String()
+    posted_by = graphene.Field(UserType)
+    created_at = graphene.String()
+
+    class Arguments:
+        url = graphene.String()
+        description = graphene.String()
+
+    def mutate(self, info, url, description):
+        user = info.context.user or None
+
+        quark = Quark(
+            url=url,
+            description=description,
+            posted_by=user,
+        )
+        quark.save()
+
+        return CreateQuark(
+            id=quark.id,
+            url=quark.url,
+            description=quark.description,
+            posted_by=quark.posted_by,
+            created_at=quark.created_at,
+        )
+
+# Remove this Later ==============
 class CreateLink(graphene.Mutation):
     id = graphene.Int()
     url = graphene.String()
@@ -162,6 +208,7 @@ class CreateVote(graphene.Mutation):
         )
 
         return CreateVote(user=user, link=link)
+# ================================
     
 
 class Mutation(graphene.ObjectType):
