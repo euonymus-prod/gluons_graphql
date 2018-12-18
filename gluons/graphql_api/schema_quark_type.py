@@ -21,12 +21,12 @@ class Query(graphene.ObjectType):
         # The value sent with the search parameter will be in the args variable
         orderBy = kwargs.get("orderBy", None)
         if orderBy:
-            qs = QuarkType.objects.order_by(orderBy).reverse()
+            # qs = QuarkType.objects.order_by(orderBy).reverse()
+            qs = QuarkType.objects.order_by(orderBy)
         else:
             qs = QuarkType.objects.all()
 
         return qs
-
 
 class CreateQuarkType(graphene.Mutation):
     id = graphene.Int()
@@ -38,6 +38,7 @@ class CreateQuarkType(graphene.Mutation):
     has_gender = graphene.Boolean()
     sort = graphene.Int()
     created_at = graphene.String()
+    user = graphene.Field(UserType)
 
     class Arguments:
         name = graphene.String()
@@ -49,6 +50,10 @@ class CreateQuarkType(graphene.Mutation):
         sort = graphene.Int()
 
     def mutate(self, info, name, image_path, name_prop, start_prop, end_prop, has_gender, sort):
+        user = info.context.user
+        if user.is_anonymous:
+            raise GraphQLError('You must be logged to vote!')
+
         quark_type = QuarkType(
             name=name,
             image_path=image_path,
