@@ -52,7 +52,7 @@ class CreateQuarkType(graphene.Mutation):
     def mutate(self, info, name, image_path, name_prop, start_prop, end_prop, has_gender, sort):
         user = info.context.user
         if user.is_anonymous:
-            raise GraphQLError('You must be logged to vote!')
+            raise GraphQLError('You must be logged in!')
 
         quark_type = QuarkType(
             name=name,

@@ -44,7 +44,7 @@ class CreateQuarkProperty(graphene.Mutation):
     def mutate(self, info, name, caption, caption_ja):
         user = info.context.user
         if user.is_anonymous:
-            raise GraphQLError('You must be logged to vote!')
+            raise GraphQLError('You must be logged in!')
 
         quark_property = QuarkProperty(
             name=name,

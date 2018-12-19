@@ -44,7 +44,7 @@ class CreateQpropertyGtype(graphene.Mutation):
     def mutate(self, info, gluon_type_id, quark_property_id, side):
         user = info.context.user
         if user.is_anonymous:
-            raise GraphQLError('You must be logged to vote!')
+            raise GraphQLError('You must be logged in!')
 
         quark_property = QuarkProperty.objects.filter(id=quark_property_id).first()
         if not quark_property:
