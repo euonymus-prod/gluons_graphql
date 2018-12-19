@@ -2,14 +2,15 @@ import graphene
 from graphene_django import DjangoObjectType
 
 from users.schema import UserType
-from graphql_api.models import QtypeProperty
+from graphql_api.models import QtypeProperty, QuarkType, QuarkProperty
+from graphql_api.schema_quark_type import QuarkTypeType
+from graphql_api.schema_quark_property import QuarkPropertyType
 from graphql import GraphQLError
 from django.db.models import Q
 
 class QtypePropertyType(DjangoObjectType):
     class Meta:
         model = QtypeProperty
-
 
 class Query(graphene.ObjectType):
     qtype_properties = graphene.List(
@@ -30,37 +31,36 @@ class Query(graphene.ObjectType):
 
 class CreateQtypeProperty(graphene.Mutation):
     id = graphene.Int()
-    name = graphene.String()
-    caption = graphene.String()
-    caption_ja = graphene.String()
+    quark_type = graphene.Field(QuarkTypeType)
+    quark_property = graphene.Field(QuarkPropertyType)
+    is_required = graphene.Boolean()
     created_at = graphene.String()
-    user = graphene.Field(UserType)
 
     class Arguments:
-        name = graphene.String()
-        caption = graphene.String()
-        caption_ja = graphene.String()
+        quark_type_id = graphene.Int()
+        quark_property_id = graphene.Int()
+        is_required = graphene.Boolean()
 
-    def mutate(self, info, name, caption, caption_ja):
+    def mutate(self, info, is_required, quark_type_id, quark_property_id):
         user = info.context.user
         if user.is_anonymous:
             raise GraphQLError('You must be logged to vote!')
 
-        qtype_property = QtypeProperty(
-            name=name,
-            caption=caption,
-            caption_ja=caption_ja,
-        )
-        qtype_property.save()
+        quark_type = QuarkType.objects.filter(id=quark_type_id).first()
+        if not quark_type:
+            raise Exception('Invalid QuarkType!')
 
-        return CreateQtypeProperty(
-            id=qtype_property.id,
-            name=qtype_property.name,
-            caption=qtype_property.caption,
-            caption_ja=qtype_property.caption_ja,
-            created_at=qtype_property.created_at,
-        )
-    
+        quark_property = QuarkProperty.objects.filter(id=quark_property_id).first()
+        if not quark_property:
+            raise Exception('Invalid QuarkProperty!')
+
+        QtypeProperty.objects.create(
+            quark_type=quark_type,
+            quark_property=quark_property,
+            is_required=is_required
+         )
+
+        return CreateQtypeProperty(quark_type=quark_type, quark_property=quark_property, is_required=is_required)
 
 class Mutation(graphene.ObjectType):
     create_qtype_property = CreateQtypeProperty.Field()
