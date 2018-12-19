@@ -5,6 +5,7 @@ import graphql_api.schema_quark
 import graphql_api.schema_quark_type
 import graphql_api.schema_gluon_type
 import graphql_api.schema_quark_property
+import graphql_api.schema_qtype_property
 import users.schema
 
 
@@ -14,6 +15,7 @@ class Query(
         graphql_api.schema_quark_type.Query,
         graphql_api.schema_gluon_type.Query,
         graphql_api.schema_quark_property.Query,
+        graphql_api.schema_qtype_property.Query,
         graphene.ObjectType):
     pass
 
@@ -23,6 +25,7 @@ class Mutation(
         graphql_api.schema_quark_type.Mutation,
         graphql_api.schema_gluon_type.Mutation,
         graphql_api.schema_quark_property.Mutation,
+        graphql_api.schema_qtype_property.Mutation,
         graphene.ObjectType,
 ):
     token_auth = graphql_jwt.ObtainJSONWebToken.Field()
