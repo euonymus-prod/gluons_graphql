@@ -1,23 +1,11 @@
 from django.conf import settings
+import uuid
 from django.db import models
 from django.core.validators import MaxValueValidator
 
-# sample models
-class Link(models.Model):
-    url = models.URLField()
-    description = models.TextField(blank=True)
-    # created_at = models.DateTimeField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    posted_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, on_delete=models.CASCADE)
-
-class Vote(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    link = models.ForeignKey('graphql_api.Link', related_name='votes', on_delete=models.CASCADE)
-
-
 # gluons models
 class Quark(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255,blank=False)
     # Don't make it URLField: image_path could be relative path like '/img/hoge.png'.
     image_path = models.CharField(max_length=255,blank=True)
@@ -41,6 +29,7 @@ class Quark(models.Model):
 
 
 class Gluon(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     relation = models.TextField(max_length=255,blank=False)
     prefix = models.TextField(max_length=255,blank=True)
     suffix = models.TextField(max_length=255,blank=True)
