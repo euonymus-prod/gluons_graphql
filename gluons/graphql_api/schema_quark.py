@@ -60,7 +60,7 @@ class Query(graphene.ObjectType):
         return qs.count()
 
 class CreateQuark(graphene.Mutation):
-    id = graphene.Int()
+    id = graphene.String()
     url = graphene.String()
     description = graphene.String()
     posted_by = graphene.Field(UserType)
