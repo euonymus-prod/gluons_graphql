@@ -141,8 +141,87 @@ class CreateQuark(graphene.Mutation):
                            is_momentary=is_momentary, url=url, affiliate=affiliate, is_private=is_private,
                            is_exclusive=is_exclusive, posted_by=user, last_modified_by=user)
 
+class UpdateQuark(graphene.Mutation):
+    id = graphene.String()
+    quark_type = graphene.Field(QuarkTypeType)
+    name = graphene.String()
+    image_path = graphene.String()
+    description = graphene.String()
+    start = graphene.String()
+    end = graphene.String()
+    start_accuracy = graphene.String()
+    end_accuracy = graphene.String()
+    is_momentary = graphene.Boolean()
+    url = graphene.String()
+    affiliate = graphene.String()
+    is_private = graphene.Boolean()
+    is_exclusive = graphene.Boolean()
+    posted_by = graphene.Field(UserType)
+    last_modified_by = graphene.Field(UserType)
+    created_at = graphene.String()
+
+    class Arguments:
+        id = graphene.String()
+        name = graphene.String()
+        image_path = graphene.String()
+        description = graphene.String()
+        start = graphene.String()
+        end = graphene.String()
+        start_accuracy = graphene.String()
+        end_accuracy = graphene.String()
+        is_momentary = graphene.Boolean()
+        url = graphene.String()
+        affiliate = graphene.String()
+        is_private = graphene.Boolean()
+        is_exclusive = graphene.Boolean()
+        quark_type_id = graphene.Int()
+
+    def mutate(self, info, id, name, image_path, description, start, end, start_accuracy, end_accuracy,
+               is_momentary, url, affiliate, is_private, is_exclusive, quark_type_id):
+
+        user = info.context.user
+        if user.is_anonymous:
+            raise GraphQLError('You must be logged in!')
+
+        quark_type = QuarkType.objects.filter(id=quark_type_id).first()
+        if not quark_type:
+            raise Exception('Invalid QuarkType!')
+
+        if len(start) == 0:
+            start = None
+
+        if len(end) == 0:
+            end = None
+
+        target_quark = Quark.objects.filter(id=id)
+        if not target_quark:
+            raise Exception('Invalid Quark!')
+
+        target_quark.update(
+            quark_type=quark_type,
+            name=name,
+            image_path=image_path,
+            description=description,
+            start=start,
+            end=end,
+            start_accuracy=start_accuracy,
+            end_accuracy=end_accuracy,
+            is_momentary=is_momentary,
+            url=url,
+            affiliate=affiliate,
+            is_private=is_private,
+            is_exclusive=is_exclusive,
+            last_modified_by=user,
+        )
+
+        return UpdateQuark(id=id, quark_type=quark_type, name=name, image_path=image_path, description=description,
+                           start=start, end=end, start_accuracy=start_accuracy, end_accuracy=end_accuracy,
+                           is_momentary=is_momentary, url=url, affiliate=affiliate, is_private=is_private,
+                           is_exclusive=is_exclusive, posted_by=user, last_modified_by=user)
+
 
 class Mutation(graphene.ObjectType):
     create_quark = CreateQuark.Field()
+    update_quark = UpdateQuark.Field()
 
 
