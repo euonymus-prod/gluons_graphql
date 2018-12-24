@@ -2,18 +2,19 @@ import graphene
 from graphene_django import DjangoObjectType
 
 from users.schema import UserType
-from graphql_api.models import Quark
+from graphql_api.models import Quark, QuarkType
+from graphql_api.schema_quark_type import QuarkTypeType
 from graphql import GraphQLError
 from django.db.models import Q
 
-class QuarkType(DjangoObjectType):
+class QuarkModelType(DjangoObjectType):
     class Meta:
         model = Quark
 
 
 class Query(graphene.ObjectType):
     quarks = graphene.List(
-        QuarkType,
+        QuarkModelType,
         search=graphene.String(),
         first=graphene.Int(),
         skip=graphene.Int(),
@@ -61,32 +62,73 @@ class Query(graphene.ObjectType):
 
 class CreateQuark(graphene.Mutation):
     id = graphene.String()
-    url = graphene.String()
+    quark_type = graphene.Field(QuarkTypeType)
+    name = graphene.String()
+    image_path = graphene.String()
     description = graphene.String()
+    start = graphene.String()
+    end = graphene.String()
+    start_accuracy = graphene.String()
+    end_accuracy = graphene.String()
+    is_momentary = graphene.Boolean()
+    url = graphene.String()
+    affiliate = graphene.String()
+    is_private = graphene.Boolean()
+    is_exclusive = graphene.Boolean()
     posted_by = graphene.Field(UserType)
+    last_modified_by = graphene.Field(UserType)
     created_at = graphene.String()
 
     class Arguments:
-        url = graphene.String()
+        name = graphene.String()
+        image_path = graphene.String()
         description = graphene.String()
+        start = graphene.String()
+        end = graphene.String()
+        start_accuracy = graphene.String()
+        end_accuracy = graphene.String()
+        is_momentary = graphene.Boolean()
+        url = graphene.String()
+        affiliate = graphene.String()
+        is_private = graphene.Boolean()
+        is_exclusive = graphene.Boolean()
+        quark_type_id = graphene.Int()
 
-    def mutate(self, info, url, description):
-        user = info.context.user or None
+    def mutate(self, info, name, image_path, description, start, end, start_accuracy, end_accuracy,
+               is_momentary, url, affiliate, is_private, is_exclusive, quark_type_id):
 
-        quark = Quark(
-            url=url,
+        user = info.context.user
+        if user.is_anonymous:
+            raise GraphQLError('You must be logged in!')
+
+        quark_type = QuarkType.objects.filter(id=quark_type_id).first()
+        if not quark_type:
+            raise Exception('Invalid QuarkType!')
+
+        Quark.objects.create(
+            quark_type=quark_type,
+            name=name,
+            image_path=image_path,
             description=description,
+            start=start,
+            end=end,
+            start_accuracy=start_accuracy,
+            end_accuracy=end_accuracy,
+            is_momentary=is_momentary,
+            url=url,
+            affiliate=affiliate,
+            is_private=is_private,
+            is_exclusive=is_exclusive,
             posted_by=user,
-        )
-        quark.save()
+            last_modified_by=user,
+         )
 
-        return CreateQuark(
-            id=quark.id,
-            url=quark.url,
-            description=quark.description,
-            posted_by=quark.posted_by,
-            created_at=quark.created_at,
-        )
+        return CreateQuark(quark_type=quark_type, name=name, image_path=image_path, description=description,
+                           start=start, end=end, start_accuracy=start_accuracy, end_accuracy=end_accuracy,
+                           is_momentary=is_momentary, url=url, affiliate=affiliate, is_private=is_private,
+                           is_exclusive=is_exclusive, 
+                           posted_by=posted_by, last_modified_by=last_modified_by)
+
 
 class Mutation(graphene.ObjectType):
     create_quark = CreateQuark.Field()
