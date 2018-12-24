@@ -13,6 +13,10 @@ class QuarkModelType(DjangoObjectType):
 
 
 class Query(graphene.ObjectType):
+    quark = graphene.Field(
+        QuarkModelType,
+        id=graphene.String()
+    )
     quarks = graphene.List(
         QuarkModelType,
         search=graphene.String(),
@@ -23,6 +27,9 @@ class Query(graphene.ObjectType):
     quark_count = graphene.Int(
         search=graphene.String(),
     )
+
+    def resolve_quark(self, info, id=None, **kwargs):
+        return Quark.objects.get(id=id)
 
     def resolve_quarks(self, info, search=None, first=None, skip=None, **kwargs):
         # The value sent with the search parameter will be in the args variable
