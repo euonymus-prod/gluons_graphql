@@ -105,6 +105,12 @@ class CreateQuark(graphene.Mutation):
         if not quark_type:
             raise Exception('Invalid QuarkType!')
 
+        if len(start) == 0:
+            start = None
+
+        if len(end) == 0:
+            end = None
+
         Quark.objects.create(
             quark_type=quark_type,
             name=name,
@@ -126,8 +132,7 @@ class CreateQuark(graphene.Mutation):
         return CreateQuark(quark_type=quark_type, name=name, image_path=image_path, description=description,
                            start=start, end=end, start_accuracy=start_accuracy, end_accuracy=end_accuracy,
                            is_momentary=is_momentary, url=url, affiliate=affiliate, is_private=is_private,
-                           is_exclusive=is_exclusive, 
-                           posted_by=posted_by, last_modified_by=last_modified_by)
+                           is_exclusive=is_exclusive, posted_by=user, last_modified_by=user)
 
 
 class Mutation(graphene.ObjectType):
