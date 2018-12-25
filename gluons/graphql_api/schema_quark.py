@@ -220,8 +220,36 @@ class UpdateQuark(graphene.Mutation):
                            is_exclusive=is_exclusive, posted_by=user, last_modified_by=user)
 
 
+class DeleteQuark(graphene.Mutation):
+    id = graphene.String()
+    name = graphene.String()
+    image_path = graphene.String()
+    description = graphene.String()
+    is_exclusive = graphene.Boolean()
+    posted_by = graphene.Field(UserType)
+    created_at = graphene.String()
+    class Arguments:
+        id = graphene.String()
+             n
+    def mutate(self, info, id):
+
+        user = info.context.user
+        if user.is_anonymous:
+            raise GraphQLError('You must be logged in!')
+
+        target_quark = Quark.objects.filter(id=id)
+        if not target_quark:
+            raise Exception('Invalid Quark!')
+
+        print(target_quark)
+        # target_quark.delete()
+
+        return DeleteQuark(id=id, name=name, image_path=image_path, description=description)
+
+
 class Mutation(graphene.ObjectType):
     create_quark = CreateQuark.Field()
     update_quark = UpdateQuark.Field()
+    delete_quark = DeleteQuark.Field()
 
 
