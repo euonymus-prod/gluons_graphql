@@ -118,7 +118,7 @@ class CreateQuark(graphene.Mutation):
         if len(end) == 0:
             end = None
 
-        Quark.objects.create(
+        generated = Quark.objects.create(
             quark_type=quark_type,
             name=name,
             image_path=image_path,
@@ -136,7 +136,7 @@ class CreateQuark(graphene.Mutation):
             last_modified_by=user,
          )
 
-        return CreateQuark(quark_type=quark_type, name=name, image_path=image_path, description=description,
+        return CreateQuark(quark_type=quark_type, id=generated.id, name=name, image_path=image_path, description=description,
                            start=start, end=end, start_accuracy=start_accuracy, end_accuracy=end_accuracy,
                            is_momentary=is_momentary, url=url, affiliate=affiliate, is_private=is_private,
                            is_exclusive=is_exclusive, posted_by=user, last_modified_by=user)
@@ -228,28 +228,28 @@ class DeleteQuark(graphene.Mutation):
     is_exclusive = graphene.Boolean()
     posted_by = graphene.Field(UserType)
     created_at = graphene.String()
+
     class Arguments:
         id = graphene.String()
-             n
+
     def mutate(self, info, id):
 
         user = info.context.user
         if user.is_anonymous:
             raise GraphQLError('You must be logged in!')
 
-        target_quark = Quark.objects.filter(id=id)
+        target_quark = Quark.objects.get(id=id)
         if not target_quark:
             raise Exception('Invalid Quark!')
 
-        print(target_quark)
-        # target_quark.delete()
+        if not user.is_superuser and user.id != target_quark.posted_by.id and target_quark.is_exclusive:
+            raise Exception('You are not authorized')
 
-        return DeleteQuark(id=id, name=name, image_path=image_path, description=description)
+        target_quark.delete()
 
+        return target_quark
 
 class Mutation(graphene.ObjectType):
     create_quark = CreateQuark.Field()
     update_quark = UpdateQuark.Field()
     delete_quark = DeleteQuark.Field()
-
-
