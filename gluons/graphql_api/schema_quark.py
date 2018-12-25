@@ -197,6 +197,9 @@ class UpdateQuark(graphene.Mutation):
         if not target_quark:
             raise Exception('Invalid Quark!')
 
+        if not user.is_superuser and user.id != target_quark.first().posted_by.id and target_quark.first().is_exclusive:
+            raise Exception('You are not authorized')
+
         target_quark.update(
             quark_type=quark_type,
             name=name,
