@@ -60,6 +60,12 @@ class CreateGluon(graphene.Mutation):
         if not object_quarks:
             raise Exception('Invalid Object Quark!')
 
+        if not object_quark_name:
+            raise Exception('Object Quark Name is required!')
+
+        if not relation:
+            raise Exception('Relation is required!')
+
         gluon_type = GluonType.objects.filter(id=gluon_type_id).first()
         if not gluon_type:
             raise Exception('Invalid GluonType!')
