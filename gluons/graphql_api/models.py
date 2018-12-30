@@ -6,7 +6,7 @@ from django.core.validators import MaxValueValidator
 # gluons models
 class Quark(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(max_length=255,blank=False)
+    name = models.CharField(unique=True,max_length=255,blank=False)
     # Don't make it URLField: image_path could be relative path like '/img/hoge.png'.
     image_path = models.CharField(max_length=255,blank=True)
     description = models.TextField(blank=True)
@@ -15,8 +15,8 @@ class Quark(models.Model):
     start_accuracy = models.CharField(max_length=10,blank=True)
     end_accuracy = models.CharField(max_length=10,blank=True)
     is_momentary = models.BooleanField(default=False,blank=True)
-    url = models.URLField(blank=True)
-    affiliate = models.URLField(blank=True)
+    url = models.URLField(max_length=255,blank=True)
+    affiliate = models.URLField(max_length=255,blank=True)
     gender = models.CharField(max_length=3,blank=True)
     is_private = models.BooleanField(default=False,blank=True)
     is_exclusive = models.BooleanField(default=True,blank=True)
@@ -30,15 +30,15 @@ class Quark(models.Model):
 
 class Gluon(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    relation = models.TextField(max_length=255,blank=False)
-    prefix = models.TextField(max_length=255,blank=True)
-    suffix = models.TextField(max_length=255,blank=True)
+    relation = models.CharField(max_length=255,blank=False)
+    prefix = models.CharField(max_length=255,blank=True)
+    suffix = models.CharField(max_length=255,blank=True)
     start = models.DateField(null=True,blank=True)
     end = models.DateField(null=True,blank=True)
     start_accuracy = models.CharField(max_length=10,blank=True)
     end_accuracy = models.CharField(max_length=10,blank=True)
     is_momentary = models.BooleanField(default=False,blank=True)
-    url = models.URLField(blank=True)
+    url = models.URLField(max_length=255,blank=True)
     is_private = models.BooleanField(default=False,blank=True)
     is_exclusive = models.BooleanField(default=True,blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
