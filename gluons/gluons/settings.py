@@ -151,6 +151,9 @@ CORS_ORIGIN_WHITELIST = (
     'localhost:3000',
     'localhost:3001',
     'localhost:3002',
+    'ja.localhost:3000',
+    'ja.localhost:3001',
+    'ja.localhost:3002',
     'gluons.link',
     'ja.gluons.link'
 )
