@@ -149,7 +149,7 @@ class CreateQuark(graphene.Mutation):
         return CreateQuark(quark_type=quark_type, id=generated.id, name=name, image_path=image_path, description=description,
                            start=start, end=end, start_accuracy=start_accuracy, end_accuracy=end_accuracy,
                            is_momentary=is_momentary, url=url, affiliate=affiliate, is_private=is_private,
-                           is_exclusive=is_exclusive, posted_by=user, last_modified_by=user)
+                           is_exclusive=is_exclusive, posted_by=user, last_modified_by=user, created_at=generated.created_at)
 
 class UpdateQuark(graphene.Mutation):
     id = graphene.String()
