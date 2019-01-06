@@ -70,7 +70,7 @@ class Query(graphene.ObjectType):
 class CreateQuark(graphene.Mutation):
     id = graphene.String()
     quark_type = graphene.Field(QuarkTypeType)
-    name = graphene.String()
+    name = graphene.NonNull(graphene.String)
     image_path = graphene.String()
     description = graphene.String()
     start = graphene.String()
@@ -82,12 +82,13 @@ class CreateQuark(graphene.Mutation):
     affiliate = graphene.String()
     is_private = graphene.Boolean()
     is_exclusive = graphene.Boolean()
+    auto_fill = graphene.Boolean()
     posted_by = graphene.Field(UserType)
     last_modified_by = graphene.Field(UserType)
     created_at = graphene.String()
 
     class Arguments:
-        name = graphene.String()
+        name = graphene.NonNull(graphene.String)
         image_path = graphene.String()
         description = graphene.String()
         start = graphene.String()
@@ -99,14 +100,18 @@ class CreateQuark(graphene.Mutation):
         affiliate = graphene.String()
         is_private = graphene.Boolean()
         is_exclusive = graphene.Boolean()
+        auto_fill = graphene.Boolean()
         quark_type_id = graphene.Int()
 
     def mutate(self, info, name, image_path, description, start, end, start_accuracy, end_accuracy,
-               is_momentary, url, affiliate, is_private, is_exclusive, quark_type_id):
+               is_momentary, url, affiliate, is_private, is_exclusive, auto_fill, quark_type_id):
 
         user = info.context.user
         if user.is_anonymous:
             raise GraphQLError('You must be logged in!')
+
+        if name is '':
+            raise Exception('Name is required')
 
         quark_type = QuarkType.objects.filter(id=quark_type_id).first()
         if not quark_type:
@@ -117,6 +122,11 @@ class CreateQuark(graphene.Mutation):
 
         if len(end) == 0:
             end = None
+
+        if auto_fill and (image_path is ''):
+            from graphql_api.common import camel_to_snake
+            image_file_name = camel_to_snake(quark_type.name)
+            image_path = "/img/%s.png" % image_file_name
 
         generated = Quark.objects.create(
             quark_type=quark_type,
