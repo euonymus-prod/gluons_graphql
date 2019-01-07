@@ -41,7 +41,7 @@ class Query(graphene.ObjectType):
 
         if search:
             filter = (
-                Q(url__icontains=search) |
+                Q(name__icontains=search) |
                 Q(description__icontains=search)
             )
             qs = qs.filter(filter)
@@ -60,7 +60,7 @@ class Query(graphene.ObjectType):
 
         if search:
             filter = (
-                Q(url__icontains=search) |
+                Q(name__icontains=search) |
                 Q(description__icontains=search)
             )
             qs = qs.filter(filter)
