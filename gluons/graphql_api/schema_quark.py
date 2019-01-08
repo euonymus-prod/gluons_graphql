@@ -15,7 +15,8 @@ class QuarkModelType(DjangoObjectType):
 class Query(graphene.ObjectType):
     quark = graphene.Field(
         QuarkModelType,
-        id=graphene.String()
+        id=graphene.String(),
+        name=graphene.String()
     )
     quarks = graphene.List(
         QuarkModelType,
@@ -28,7 +29,14 @@ class Query(graphene.ObjectType):
         search=graphene.String(),
     )
 
-    def resolve_quark(self, info, id=None, **kwargs):
+    def resolve_quark(self, info, id=None, name=None, **kwargs):
+        if (id is None) and (name is not None):
+            qs = Quark.objects.all()
+            filter = (
+                Q(name__exact=name)
+            )
+            return qs.filter(filter).first()
+
         return Quark.objects.get(id=id)
 
     def resolve_quarks(self, info, search=None, first=None, skip=None, **kwargs):
