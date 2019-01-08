@@ -15,10 +15,11 @@ class QtypePropertyType(DjangoObjectType):
 class Query(graphene.ObjectType):
     qtype_properties = graphene.List(
         QtypePropertyType,
-        orderBy=graphene.String(),
+        quarkTypeId=graphene.Int(),
+        orderBy=graphene.String()
     )
 
-    def resolve_qtype_properties(self, info, **kwargs):
+    def resolve_qtype_properties(self, info, quarkTypeId=None, **kwargs):
         # The value sent with the search parameter will be in the args variable
         orderBy = kwargs.get("orderBy", None)
         if orderBy:
@@ -26,6 +27,12 @@ class Query(graphene.ObjectType):
             qs = QtypeProperty.objects.order_by(orderBy)
         else:
             qs = QtypeProperty.objects.all()
+
+        if quarkTypeId:
+            filter = (
+                Q(quark_type_id__exact=quarkTypeId)
+            )
+            qs = qs.filter(filter)
 
         return qs
 
