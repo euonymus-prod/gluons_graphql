@@ -2,15 +2,44 @@ import graphene
 from graphene_django import DjangoObjectType
 
 from users.schema import UserType
-from graphql_api.models import Quark, QuarkType
-from graphql_api.schema_quark_type import QuarkTypeType
+
+from graphql_api.models import Quark, QuarkType, Gluon, GluonType, QuarkProperty, QtypeProperty, QpropertyGtype, QpropertyType
+
 from graphql import GraphQLError
 from django.db.models import Q
 
+print(11111)
 class QuarkModelType(DjangoObjectType):
     class Meta:
         model = Quark
 
+class GluonModelType(DjangoObjectType):
+    class Meta:
+        model = Gluon
+
+class QuarkTypeType(DjangoObjectType):
+    class Meta:
+        model = QuarkType
+
+class GluonTypeType(DjangoObjectType):
+    class Meta:
+        model = GluonType
+
+class QuarkPropertyType(DjangoObjectType):
+    class Meta:
+        model = QuarkProperty
+
+class QtypePropertyType(DjangoObjectType):
+    class Meta:
+        model = QtypeProperty
+
+class QpropertyGtypeType(DjangoObjectType):
+    class Meta:
+        model = QpropertyGtype
+
+class QpropertyTypeType(DjangoObjectType):
+    class Meta:
+        model = QpropertyType
 
 class Query(graphene.ObjectType):
     quark = graphene.Field(
@@ -29,7 +58,54 @@ class Query(graphene.ObjectType):
         search=graphene.String(),
     )
 
+    gluon = graphene.Field(
+        GluonModelType,
+        id=graphene.String(),
+    )
+    gluons = graphene.List(
+        GluonModelType,
+        relative=graphene.String(),
+        expectedSide=graphene.Int(),
+        side=graphene.Int(),
+        first=graphene.Int(),
+        skip=graphene.Int(),
+        orderBy=graphene.String(),
+    )
+    gluon_count = graphene.Int()
+
+    quark_types = graphene.List(
+        QuarkTypeType,
+        orderBy=graphene.String(),
+    )
+
+    gluon_types = graphene.List(
+        GluonTypeType,
+        orderBy=graphene.String(),
+    )
+
+    quark_properties = graphene.List(
+        QuarkPropertyType,
+        orderBy=graphene.String(),
+    )
+
+    qtype_properties = graphene.List(
+        QtypePropertyType,
+        quarkTypeId=graphene.Int(),
+        orderBy=graphene.String()
+    )
+
+    qproperty_gtypes = graphene.List(
+        QpropertyGtypeType,
+        orderBy=graphene.String(),
+    )
+
+    qproperty_types = graphene.List(
+        QpropertyTypeType,
+        orderBy=graphene.String(),
+    )
+
     def resolve_quark(self, info, id=None, name=None, **kwargs):
+        print(22222)
         if (id is None) and (name is not None):
             qs = Quark.objects.all()
             filter = (
@@ -74,6 +150,109 @@ class Query(graphene.ObjectType):
             qs = qs.filter(filter)
 
         return qs.count()
+
+    def resolve_gluon(self, info, id=None, **kwargs):
+        return Gluon.objects.get(id=id)
+
+    def resolve_gluons(self, info, relative=None, expectedSide=None, side=None, first=None, skip=None, **kwargs):
+        print(1111)
+        if side != expectedSide:
+            if side != 0:
+                return None
+
+        # The value sent with the search parameter will be in the args variable
+        orderBy = kwargs.get("orderBy", None)
+        if orderBy:
+            qs = Gluon.objects.order_by(orderBy).reverse()
+        else:
+            qs = Gluon.objects.all()
+
+        if skip:
+            qs = qs[skip:]
+
+        if first:
+            qs = qs[:first]
+
+        return qs
+
+    def resolve_gluon_count(self, info, **kwargs):
+        # The value sent with the search parameter will be in the args variable
+        qs = Quark.objects.all()
+        return qs.count()
+
+    def resolve_quark_types(self, info, **kwargs):
+        # The value sent with the search parameter will be in the args variable
+        orderBy = kwargs.get("orderBy", None)
+        if orderBy:
+            # qs = QuarkType.objects.order_by(orderBy).reverse()
+            qs = QuarkType.objects.order_by(orderBy)
+        else:
+            qs = QuarkType.objects.all()
+
+        return qs
+
+    def resolve_gluon_types(self, info, **kwargs):
+        # The value sent with the search parameter will be in the args variable
+        orderBy = kwargs.get("orderBy", None)
+        if orderBy:
+            # qs = GluonType.objects.order_by(orderBy).reverse()
+            qs = GluonType.objects.order_by(orderBy)
+        else:
+            qs = GluonType.objects.all()
+
+        return qs
+
+
+    def resolve_quark_properties(self, info, **kwargs):
+        # The value sent with the search parameter will be in the args variable
+        orderBy = kwargs.get("orderBy", None)
+        if orderBy:
+            # qs = QuarkProperty.objects.order_by(orderBy).reverse()
+            qs = QuarkProperty.objects.order_by(orderBy)
+        else:
+            qs = QuarkProperty.objects.all()
+
+        return qs
+
+    def resolve_qtype_properties(self, info, quarkTypeId=None, **kwargs):
+        # The value sent with the search parameter will be in the args variable
+        orderBy = kwargs.get("orderBy", None)
+        if orderBy:
+            # qs = QtypeProperty.objects.order_by(orderBy).reverse()
+            qs = QtypeProperty.objects.order_by(orderBy)
+        else:
+            qs = QtypeProperty.objects.all()
+
+        if quarkTypeId:
+            filter = (
+                Q(quark_type_id__exact=quarkTypeId)
+            )
+            qs = qs.filter(filter)
+
+        return qs
+
+
+    def resolve_qproperty_gtypes(self, info, **kwargs):
+        # The value sent with the search parameter will be in the args variable
+        orderBy = kwargs.get("orderBy", None)
+        if orderBy:
+            # qs = QpropertyGtype.objects.order_by(orderBy).reverse()
+            qs = QpropertyGtype.objects.order_by(orderBy)
+        else:
+            qs = QpropertyGtype.objects.all()
+
+        return qs
+
+    def resolve_qproperty_types(self, info, **kwargs):
+        # The value sent with the search parameter will be in the args variable
+        orderBy = kwargs.get("orderBy", None)
+        if orderBy:
+            # qs = QpropertyType.objects.order_by(orderBy).reverse()
+            qs = QpropertyType.objects.order_by(orderBy)
+        else:
+            qs = QpropertyType.objects.all()
+
+        return qs
 
 class CreateQuark(graphene.Mutation):
     id = graphene.String()
@@ -270,7 +449,336 @@ class DeleteQuark(graphene.Mutation):
 
         return target_quark
 
+class CreateGluon(graphene.Mutation):
+    id = graphene.String()
+    gluon_type = graphene.Field(GluonTypeType)
+    subject_quark = graphene.Field(QuarkModelType)
+    object_quark = graphene.Field(QuarkModelType)
+    prefix = graphene.String()
+    relation = graphene.String()
+    suffix = graphene.String()
+    start = graphene.String()
+    end = graphene.String()
+    start_accuracy = graphene.String()
+    end_accuracy = graphene.String()
+    is_momentary = graphene.Boolean()
+    url = graphene.String()
+    is_private = graphene.Boolean()
+    is_exclusive = graphene.Boolean()
+    posted_by = graphene.Field(UserType)
+    last_modified_by = graphene.Field(UserType)
+    created_at = graphene.String()
+
+    class Arguments:
+        subject_quark_id = graphene.String()
+        object_quark_name = graphene.String()
+        gluon_type_id = graphene.Int()
+        prefix = graphene.String()
+        relation = graphene.String()
+        suffix = graphene.String()
+        start = graphene.String()
+        end = graphene.String()
+        start_accuracy = graphene.String()
+        end_accuracy = graphene.String()
+        is_momentary = graphene.Boolean()
+        url = graphene.String()
+        is_private = graphene.Boolean()
+        is_exclusive = graphene.Boolean()
+
+    def mutate(self, info, subject_quark_id, object_quark_name, gluon_type_id, prefix, relation, suffix,
+               start, end, start_accuracy, end_accuracy, is_momentary, url, is_private, is_exclusive):
+
+        user = info.context.user
+        if user.is_anonymous:
+            raise GraphQLError('You must be logged in!')
+
+        subject_quark = Quark.objects.get(id=subject_quark_id)
+        if not subject_quark:
+            raise Exception('Invalid Subject Quark!')
+
+        object_quarks = Quark.objects.filter(name=object_quark_name)
+        if not object_quarks:
+            raise Exception('Invalid Object Quark!')
+
+        if not object_quark_name:
+            raise Exception('Object Quark Name is required!')
+
+        if not relation:
+            raise Exception('Relation is required!')
+
+        gluon_type = GluonType.objects.filter(id=gluon_type_id).first()
+        if not gluon_type:
+            raise Exception('Invalid GluonType!')
+
+        if len(start) == 0:
+            start = None
+
+        if len(end) == 0:
+            end = None
+
+        generated = Gluon.objects.create(
+            subject_quark=subject_quark,
+            object_quark=object_quarks.first(),
+            gluon_type=gluon_type,
+
+            prefix=prefix,
+            relation=relation,
+            suffix=suffix,
+            start=start,
+            end=end,
+            start_accuracy=start_accuracy,
+            end_accuracy=end_accuracy,
+            is_momentary=is_momentary,
+            url=url,
+            is_private=is_private,
+            is_exclusive=is_exclusive,
+            posted_by=user,
+            last_modified_by=user,
+        )
+
+        return CreateGluon(id=generated.id, gluon_type=gluon_type,
+                           subject_quark=subject_quark, object_quark=object_quarks.first(),
+                           prefix=prefix, relation=relation, suffix=suffix,
+                           start=start, end=end, start_accuracy=start_accuracy, end_accuracy=end_accuracy,
+                           is_momentary=is_momentary, url=url, is_private=is_private,
+                           is_exclusive=is_exclusive, posted_by=user, last_modified_by=user, created_at=generated.created_at)
+
+
+class CreateQuarkType(graphene.Mutation):
+    id = graphene.Int()
+    name = graphene.String()
+    image_path = graphene.String()
+    name_prop = graphene.String()
+    start_prop = graphene.String()
+    end_prop = graphene.String()
+    has_gender = graphene.Boolean()
+    sort = graphene.Int()
+    created_at = graphene.String()
+    user = graphene.Field(UserType)
+
+    class Arguments:
+        name = graphene.String()
+        image_path = graphene.String()
+        name_prop = graphene.String()
+        start_prop = graphene.String()
+        end_prop = graphene.String()
+        has_gender = graphene.Boolean()
+        sort = graphene.Int()
+
+    def mutate(self, info, name, image_path, name_prop, start_prop, end_prop, has_gender, sort):
+        user = info.context.user
+        if user.is_anonymous:
+            raise GraphQLError('You must be logged in!')
+
+        quark_type = QuarkType(
+            name=name,
+            image_path=image_path,
+            name_prop=name_prop,
+            start_prop=start_prop,
+            end_prop=end_prop,
+            has_gender=has_gender,
+            sort=sort,
+        )
+        quark_type.save()
+
+        return CreateQuarkType(
+            id=quark_type.id,
+            name=quark_type.name,
+            image_path=quark_type.image_path,
+            name_prop=quark_type.name_prop,
+            start_prop=quark_type.start_prop,
+            end_prop=quark_type.end_prop,
+            has_gender=quark_type.has_gender,
+            sort=quark_type.sort,
+            created_at=quark_type.created_at,
+        )
+    
+class CreateGluonType(graphene.Mutation):
+    id = graphene.Int()
+    name = graphene.String()
+    caption = graphene.String()
+    caption_ja = graphene.String()
+    sort = graphene.Int()
+    created_at = graphene.String()
+    user = graphene.Field(UserType)
+
+    class Arguments:
+        name = graphene.String()
+        caption = graphene.String()
+        caption_ja = graphene.String()
+        sort = graphene.Int()
+
+    def mutate(self, info, name, caption, caption_ja, sort):
+        user = info.context.user
+        if user.is_anonymous:
+            raise GraphQLError('You must be logged in!')
+
+        gluon_type = GluonType(
+            name=name,
+            caption=caption,
+            caption_ja=caption_ja,
+            sort=sort,
+        )
+        gluon_type.save()
+
+        return CreateGluonType(
+            id=gluon_type.id,
+            name=gluon_type.name,
+            caption=gluon_type.caption,
+            caption_ja=gluon_type.caption_ja,
+            sort=gluon_type.sort,
+            created_at=gluon_type.created_at,
+        )
+    
+class CreateQuarkProperty(graphene.Mutation):
+    id = graphene.Int()
+    name = graphene.String()
+    caption = graphene.String()
+    caption_ja = graphene.String()
+    created_at = graphene.String()
+    user = graphene.Field(UserType)
+
+    class Arguments:
+        name = graphene.String()
+        caption = graphene.String()
+        caption_ja = graphene.String()
+
+    def mutate(self, info, name, caption, caption_ja):
+        user = info.context.user
+        if user.is_anonymous:
+            raise GraphQLError('You must be logged in!')
+
+        quark_property = QuarkProperty(
+            name=name,
+            caption=caption,
+            caption_ja=caption_ja,
+        )
+        quark_property.save()
+
+        return CreateQuarkProperty(
+            id=quark_property.id,
+            name=quark_property.name,
+            caption=quark_property.caption,
+            caption_ja=quark_property.caption_ja,
+            created_at=quark_property.created_at,
+        )
+    
+
+class CreateQtypeProperty(graphene.Mutation):
+    id = graphene.Int()
+    quark_type = graphene.Field(QuarkTypeType)
+    quark_property = graphene.Field(QuarkPropertyType)
+    is_required = graphene.Boolean()
+    created_at = graphene.String()
+
+    class Arguments:
+        quark_type_id = graphene.Int()
+        quark_property_id = graphene.Int()
+        is_required = graphene.Boolean()
+
+    def mutate(self, info, is_required, quark_type_id, quark_property_id):
+        user = info.context.user
+        if user.is_anonymous:
+            raise GraphQLError('You must be logged in!')
+
+        quark_type = QuarkType.objects.filter(id=quark_type_id).first()
+        if not quark_type:
+            raise Exception('Invalid QuarkType!')
+
+        quark_property = QuarkProperty.objects.filter(id=quark_property_id).first()
+        if not quark_property:
+            raise Exception('Invalid QuarkProperty!')
+
+        QtypeProperty.objects.create(
+            quark_type=quark_type,
+            quark_property=quark_property,
+            is_required=is_required
+         )
+
+        return CreateQtypeProperty(quark_type=quark_type, quark_property=quark_property, is_required=is_required)
+
+
+class CreateQpropertyGtype(graphene.Mutation):
+    id = graphene.Int()
+    quark_property = graphene.Field(QuarkPropertyType)
+    gluon_type = graphene.Field(GluonTypeType)
+    side = graphene.Int()
+    created_at = graphene.String()
+
+    class Arguments:
+        quark_property_id = graphene.Int()
+        gluon_type_id = graphene.Int()
+        side = graphene.Int()
+
+    def mutate(self, info, gluon_type_id, quark_property_id, side):
+        user = info.context.user
+        if user.is_anonymous:
+            raise GraphQLError('You must be logged in!')
+
+        quark_property = QuarkProperty.objects.filter(id=quark_property_id).first()
+        if not quark_property:
+            raise Exception('Invalid QuarkProperty!')
+
+        gluon_type = GluonType.objects.filter(id=gluon_type_id).first()
+        if not gluon_type:
+            raise Exception('Invalid GluonType!')
+
+        QpropertyGtype.objects.create(
+            quark_property=quark_property,
+            gluon_type=gluon_type,
+            side=side
+         )
+
+        return CreateQpropertyGtype(quark_property=quark_property, gluon_type=gluon_type, side=side)
+
+
+class CreateQpropertyType(graphene.Mutation):
+    id = graphene.Int()
+    quark_property = graphene.Field(QuarkPropertyType)
+    quark_type = graphene.Field(QuarkTypeType)
+    created_at = graphene.String()
+
+    class Arguments:
+        quark_property_id = graphene.Int()
+        quark_type_id = graphene.Int()
+
+    def mutate(self, info, quark_type_id, quark_property_id):
+        user = info.context.user
+        if user.is_anonymous:
+            raise GraphQLError('You must be logged in!')
+
+        quark_property = QuarkProperty.objects.filter(id=quark_property_id).first()
+        if not quark_property:
+            raise Exception('Invalid QuarkProperty!')
+
+        quark_type = QuarkType.objects.filter(id=quark_type_id).first()
+        if not quark_type:
+            raise Exception('Invalid QuarkType!')
+
+        QpropertyType.objects.create(
+            quark_property=quark_property,
+            quark_type=quark_type,
+         )
+
+        return CreateQpropertyType(quark_property=quark_property, quark_type=quark_type)
+
 class Mutation(graphene.ObjectType):
     create_quark = CreateQuark.Field()
     update_quark = UpdateQuark.Field()
     delete_quark = DeleteQuark.Field()
+
+    create_gluon = CreateGluon.Field()
+    # update_gluon = UpdateGluon.Field()
+    # delete_gluon = DeleteGluon.Field()
+
+    create_quark_type = CreateQuarkType.Field()
+
+    create_gluon_type = CreateGluonType.Field()
+
+    create_quark_property = CreateQuarkProperty.Field()
+
+    create_qtype_property = CreateQtypeProperty.Field()
+    
+    create_qproperty_gtype = CreateQpropertyGtype.Field()
+
+    create_qproperty_type = CreateQpropertyType.Field()
