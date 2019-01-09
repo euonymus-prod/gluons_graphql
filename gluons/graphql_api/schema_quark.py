@@ -102,6 +102,14 @@ qproperty_types = graphene.List(
     orderBy=graphene.String(),
 )
 
+
+
+class GluonInputSchema(graphene.InputObjectType):
+    relative=graphene.String()
+    expectedSide=graphene.Int()
+    side=graphene.Int()
+
+
 class Query(graphene.ObjectType):
     quark = quark
     quarks = quarks
@@ -110,7 +118,12 @@ class Query(graphene.ObjectType):
     gluons = gluons
     gluon_count = gluon_count
     quark_types = quark_types
-    gluon_types = gluon_types
+    # gluon_types = gluon_types
+    gluon_types = graphene.List(
+        GluonTypeType,
+        orderBy=graphene.String(),
+        gluons=GluonInputSchema()
+    )
     quark_properties = quark_properties
     qtype_properties = qtype_properties
     qproperty_gtypes = qproperty_gtypes
