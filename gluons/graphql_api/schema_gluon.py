@@ -19,6 +19,9 @@ class Query(graphene.ObjectType):
     )
     gluons = graphene.List(
         GluonModelType,
+        relative=graphene.String(),
+        expectedSide=graphene.Int(),
+        side=graphene.Int(),
         first=graphene.Int(),
         skip=graphene.Int(),
         orderBy=graphene.String(),
@@ -28,7 +31,12 @@ class Query(graphene.ObjectType):
     def resolve_gluon(self, info, id=None, **kwargs):
         return Gluon.objects.get(id=id)
 
-    def resolve_gluons(self, info, first=None, skip=None, **kwargs):
+    def resolve_gluons(self, info, relative=None, expectedSide=None, side=None, first=None, skip=None, **kwargs):
+        print(1111)
+        if side != expectedSide:
+            if side != 0:
+                return None
+
         # The value sent with the search parameter will be in the args variable
         orderBy = kwargs.get("orderBy", None)
         if orderBy:
