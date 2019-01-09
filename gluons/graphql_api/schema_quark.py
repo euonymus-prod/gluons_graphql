@@ -8,7 +8,6 @@ from graphql_api.models import Quark, QuarkType, Gluon, GluonType, QuarkProperty
 from graphql import GraphQLError
 from django.db.models import Q
 
-print(11111)
 class QuarkModelType(DjangoObjectType):
     class Meta:
         model = Quark
@@ -41,71 +40,83 @@ class QpropertyTypeType(DjangoObjectType):
     class Meta:
         model = QpropertyType
 
+quark = graphene.Field(
+    QuarkModelType,
+    id=graphene.String(),
+    name=graphene.String()
+)
+quarks = graphene.List(
+    QuarkModelType,
+    search=graphene.String(),
+    first=graphene.Int(),
+    skip=graphene.Int(),
+    orderBy=graphene.String(),
+)
+quark_count = graphene.Int(
+    search=graphene.String(),
+)
+
+gluon = graphene.Field(
+    GluonModelType,
+    id=graphene.String(),
+)
+gluons = graphene.List(
+    GluonModelType,
+    relative=graphene.String(),
+    expectedSide=graphene.Int(),
+    side=graphene.Int(),
+    first=graphene.Int(),
+    skip=graphene.Int(),
+    orderBy=graphene.String(),
+)
+gluon_count = graphene.Int()
+
+quark_types = graphene.List(
+    QuarkTypeType,
+    orderBy=graphene.String(),
+)
+
+gluon_types = graphene.List(
+    GluonTypeType,
+    orderBy=graphene.String(),
+)
+
+quark_properties = graphene.List(
+    QuarkPropertyType,
+    orderBy=graphene.String(),
+)
+
+qtype_properties = graphene.List(
+    QtypePropertyType,
+    quarkTypeId=graphene.Int(),
+    orderBy=graphene.String()
+)
+
+qproperty_gtypes = graphene.List(
+    QpropertyGtypeType,
+    orderBy=graphene.String(),
+)
+
+qproperty_types = graphene.List(
+    QpropertyTypeType,
+    orderBy=graphene.String(),
+)
+
 class Query(graphene.ObjectType):
-    quark = graphene.Field(
-        QuarkModelType,
-        id=graphene.String(),
-        name=graphene.String()
-    )
-    quarks = graphene.List(
-        QuarkModelType,
-        search=graphene.String(),
-        first=graphene.Int(),
-        skip=graphene.Int(),
-        orderBy=graphene.String(),
-    )
-    quark_count = graphene.Int(
-        search=graphene.String(),
-    )
-
-    gluon = graphene.Field(
-        GluonModelType,
-        id=graphene.String(),
-    )
-    gluons = graphene.List(
-        GluonModelType,
-        relative=graphene.String(),
-        expectedSide=graphene.Int(),
-        side=graphene.Int(),
-        first=graphene.Int(),
-        skip=graphene.Int(),
-        orderBy=graphene.String(),
-    )
-    gluon_count = graphene.Int()
-
-    quark_types = graphene.List(
-        QuarkTypeType,
-        orderBy=graphene.String(),
-    )
-
-    gluon_types = graphene.List(
-        GluonTypeType,
-        orderBy=graphene.String(),
-    )
-
-    quark_properties = graphene.List(
-        QuarkPropertyType,
-        orderBy=graphene.String(),
-    )
-
-    qtype_properties = graphene.List(
-        QtypePropertyType,
-        quarkTypeId=graphene.Int(),
-        orderBy=graphene.String()
-    )
-
-    qproperty_gtypes = graphene.List(
-        QpropertyGtypeType,
-        orderBy=graphene.String(),
-    )
-
-    qproperty_types = graphene.List(
-        QpropertyTypeType,
-        orderBy=graphene.String(),
-    )
+    quark = quark
+    quarks = quarks
+    quark_count = quark_count
+    gluon = gluon
+    gluons = gluons
+    gluon_count = gluon_count
+    quark_types = quark_types
+    gluon_types = gluon_types
+    quark_properties = quark_properties
+    qtype_properties = qtype_properties
+    qproperty_gtypes = qproperty_gtypes
+    qproperty_types = qproperty_types
 
     def resolve_quark(self, info, id=None, name=None, **kwargs):
-        print(22222)
         if (id is None) and (name is not None):
             qs = Quark.objects.all()
             filter = (
@@ -155,7 +166,6 @@ class Query(graphene.ObjectType):
         return Gluon.objects.get(id=id)
 
     def resolve_gluons(self, info, relative=None, expectedSide=None, side=None, first=None, skip=None, **kwargs):
-        print(1111)
         if side != expectedSide:
             if side != 0:
                 return None
