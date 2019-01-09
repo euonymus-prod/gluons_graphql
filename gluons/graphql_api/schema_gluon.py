@@ -8,6 +8,48 @@ from graphql_api.schema_gluon_type import GluonTypeType
 from graphql import GraphQLError
 from django.db.models import Q
 
+class GluonModelType(DjangoObjectType):
+    class Meta:
+        model = Gluon
+
+class Query(graphene.ObjectType):
+    gluon = graphene.Field(
+        GluonModelType,
+        id=graphene.String(),
+    )
+    gluons = graphene.List(
+        GluonModelType,
+        first=graphene.Int(),
+        skip=graphene.Int(),
+        orderBy=graphene.String(),
+    )
+    gluon_count = graphene.Int()
+
+    def resolve_gluon(self, info, id=None, **kwargs):
+        return Gluon.objects.get(id=id)
+
+    def resolve_gluons(self, info, first=None, skip=None, **kwargs):
+        # The value sent with the search parameter will be in the args variable
+        orderBy = kwargs.get("orderBy", None)
+        if orderBy:
+            qs = Gluon.objects.order_by(orderBy).reverse()
+        else:
+            qs = Gluon.objects.all()
+
+        if skip:
+            qs = qs[skip:]
+
+        if first:
+            qs = qs[:first]
+
+        return qs
+
+    def resolve_gluon_count(self, info, **kwargs):
+        # The value sent with the search parameter will be in the args variable
+        qs = Quark.objects.all()
+        return qs.count()
+
+
 
 class CreateGluon(graphene.Mutation):
     id = graphene.String()
