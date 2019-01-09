@@ -15,7 +15,7 @@ import users.schema
 class Query(
         users.schema.Query,
         graphql_api.schema_quark.Query,
-        # graphql_api.schema_gluon.Query,
+        graphql_api.schema_gluon.Query,
         graphql_api.schema_quark_type.Query,
         graphql_api.schema_gluon_type.Query,
         graphql_api.schema_quark_property.Query,
