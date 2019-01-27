@@ -24,6 +24,37 @@ class GluonTypeType(DjangoObjectType):
     class Meta:
         model = GluonType
 
+    gluons = graphene.List(
+        GluonModelType,
+        relative=graphene.String(),
+        expectedSide=graphene.Int(),
+        side=graphene.Int(),
+        first=graphene.Int(),
+        skip=graphene.Int(),
+        orderBy=graphene.String(),
+    )
+
+    def resolve_gluons(self, info, relative=None, expectedSide=None, side=None, first=None, skip=None, **kwargs):
+        if side != expectedSide:
+            if side != 0:
+                return None
+
+        # The value sent with the search parameter will be in the args variable
+        orderBy = kwargs.get("orderBy", None)
+        if orderBy:
+            qs = Gluon.objects.order_by(orderBy).reverse()
+        else:
+            qs = Gluon.objects.all()
+
+        if skip:
+            qs = qs[skip:]
+
+        if first:
+            qs = qs[:first]
+
+        return qs
+
+
 class QuarkPropertyType(DjangoObjectType):
     class Meta:
         model = QuarkProperty
@@ -104,12 +135,6 @@ qproperty_types = graphene.List(
 
 
 
-class GluonInputSchema(graphene.InputObjectType):
-    relative=graphene.String()
-    expectedSide=graphene.Int()
-    side=graphene.Int()
-
-
 class Query(graphene.ObjectType):
     quark = quark
     quarks = quarks
@@ -118,12 +143,7 @@ class Query(graphene.ObjectType):
     gluons = gluons
     gluon_count = gluon_count
     quark_types = quark_types
-    # gluon_types = gluon_types
-    gluon_types = graphene.List(
-        GluonTypeType,
-        orderBy=graphene.String(),
-        gluons=GluonInputSchema()
-    )
+    gluon_types = gluon_types
     quark_properties = quark_properties
     qtype_properties = qtype_properties
     qproperty_gtypes = qproperty_gtypes
