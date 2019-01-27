@@ -35,6 +35,23 @@ class GluonTypeType(DjangoObjectType):
     )
 
     def resolve_gluons(self, info, relative=None, expectedSide=None, side=None, first=None, skip=None, **kwargs):
+
+        # from pprint import pprint
+        # pprint(info.operation.selection_set.selections[0].arguments[0].value.value)
+        # # pprint(info.operation.selection_set.selections[0].selection_set.selections[2].selection_set.selections[1].selection_set.selections[0].selection_set.selections[1].selection_set.selections[0])
+
+        # pprint(info.parent_type._fields(GluonTypeType))
+
+
+
+        # Argument(
+        #     name=Name(value='id'),
+        #     value=StringValue(value='f34722f3-2686-4704-a56b-2c85d41407d1')
+        # )
+
+        # for attr in dir(info):
+        #     print (attr)
+
         if side != expectedSide:
             if side != 0:
                 return None
