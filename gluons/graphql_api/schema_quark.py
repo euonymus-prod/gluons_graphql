@@ -26,15 +26,15 @@ class GluonTypeType(DjangoObjectType):
 
     gluons = graphene.List(
         GluonModelType,
-        relative=graphene.String(),
         expectedSide=graphene.Int(),
-        side=graphene.Int(),
         first=graphene.Int(),
         skip=graphene.Int(),
         orderBy=graphene.String(),
     )
 
-    def resolve_gluons(self, info, relative=None, expectedSide=None, side=None, first=None, skip=None, **kwargs):
+    def resolve_gluons(self, info, expectedSide=None, first=None, skip=None, **kwargs):
+        print(self.side)
+        print(expectedSide)
 
         # from pprint import pprint
         # pprint(info.operation.selection_set.selections[0].arguments[0].value.value)
@@ -52,9 +52,9 @@ class GluonTypeType(DjangoObjectType):
         # for attr in dir(info):
         #     print (attr)
 
-        if side != expectedSide:
-            if side != 0:
-                return None
+        # if side != expectedSide:
+        #     if side != 0:
+        #         return None
 
         # The value sent with the search parameter will be in the args variable
         orderBy = kwargs.get("orderBy", None)
@@ -83,6 +83,16 @@ class QtypePropertyType(DjangoObjectType):
 class QpropertyGtypeType(DjangoObjectType):
     class Meta:
         model = QpropertyGtype
+
+    gluon_type = graphene.Field(
+        GluonTypeType,
+        id=graphene.String(),
+    )
+
+    def resolve_gluon_type(self, info, id=None, **kwargs):
+        qs = GluonType.objects.get(id=self.gluon_type_id)
+        qs.side = self.side
+        return qs
 
 class QpropertyTypeType(DjangoObjectType):
     class Meta:
