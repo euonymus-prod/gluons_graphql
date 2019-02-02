@@ -8,17 +8,65 @@ from graphql_api.models import Quark, QuarkType, Gluon, GluonType, QuarkProperty
 from graphql import GraphQLError
 from django.db.models import Q
 
-class QuarkModelType(DjangoObjectType):
-    class Meta:
-        model = Quark
 
-class GluonModelType(DjangoObjectType):
+
+class QtypePropertyType(DjangoObjectType):
     class Meta:
-        model = Gluon
+        model = QtypeProperty
+
+    # subject_qid = graphene.String(
+    #     subject_qid=graphene.String(),
+    # )
+
+    # def resolve_subject_qid(self, info, subject_qid=None, **kwargs):
+    #     # print('==================================')
+    #     print(subject_qid)
+    #     # for attr in dir(info):
+    #     #     print (attr)
+    #     # print('==================================')
+    #     return subject_qid
+
 
 class QuarkTypeType(DjangoObjectType):
     class Meta:
         model = QuarkType
+
+    having_quark_properties = graphene.List(
+        QtypePropertyType,
+    )
+
+    def resolve_having_quark_properties(self, info, **kwargs):
+        qs = QtypeProperty.objects.all()
+        filter = (
+            Q(quark_type_id__exact=self.id)
+        )
+        qs = qs.filter(filter)
+
+        # for index, item in enumerate(qs):
+        #     print(vars(item))
+        #     qs[index] = item.subject_qid = self.subject_qid
+            
+        return qs
+
+
+class QuarkModelType(DjangoObjectType):
+    class Meta:
+        model = Quark
+
+    quark_type = graphene.Field(
+        QuarkTypeType,
+        id=graphene.String(),
+    )
+
+    def resolve_quark_type(self, info, id=None, **kwargs):
+        print(self.id)
+        qs = QuarkType.objects.get(id=self.quark_type_id)
+        qs.subject_qid = self.id
+        return qs
+
+class GluonModelType(DjangoObjectType):
+    class Meta:
+        model = Gluon
 
 class GluonTypeType(DjangoObjectType):
     class Meta:
@@ -26,19 +74,19 @@ class GluonTypeType(DjangoObjectType):
 
     gluons = graphene.List(
         GluonModelType,
-        expectedSide=graphene.Int(),
         first=graphene.Int(),
         skip=graphene.Int(),
         orderBy=graphene.String(),
     )
 
-    def resolve_gluons(self, info, expectedSide=None, first=None, skip=None, **kwargs):
+    def resolve_gluons(self, info, first=None, skip=None, **kwargs):
         print(self.side)
-        print(expectedSide)
+        print(self.id)
 
-        # from pprint import pprint
+        from pprint import pprint
         # pprint(info.operation.selection_set.selections[0].arguments[0].value.value)
-        # # pprint(info.operation.selection_set.selections[0].selection_set.selections[2].selection_set.selections[1].selection_set.selections[0].selection_set.selections[1].selection_set.selections[0])
+        # pprint(info.field_asts)
+        # pprint(info.operation.selection_set.selections[0].selection_set.selections[2].selection_set.selections[1].selection_set.selections[0].selection_set.selections[1].selection_set.selections[0])
 
         # pprint(info.parent_type._fields(GluonTypeType))
 
@@ -63,6 +111,11 @@ class GluonTypeType(DjangoObjectType):
         else:
             qs = Gluon.objects.all()
 
+        filter = (
+            Q(gluon_type_id__exact=self.id)
+        )
+        qs = qs.filter(filter)
+
         if skip:
             qs = qs[skip:]
 
@@ -71,14 +124,6 @@ class GluonTypeType(DjangoObjectType):
 
         return qs
 
-
-class QuarkPropertyType(DjangoObjectType):
-    class Meta:
-        model = QuarkProperty
-
-class QtypePropertyType(DjangoObjectType):
-    class Meta:
-        model = QtypeProperty
 
 class QpropertyGtypeType(DjangoObjectType):
     class Meta:
@@ -93,6 +138,29 @@ class QpropertyGtypeType(DjangoObjectType):
         qs = GluonType.objects.get(id=self.gluon_type_id)
         qs.side = self.side
         return qs
+
+class QuarkPropertyType(DjangoObjectType):
+    class Meta:
+        model = QuarkProperty
+
+    having_gluon_types = graphene.List(
+        QpropertyGtypeType,
+    )
+
+    def resolve_having_gluon_types(self, info, **kwargs):
+        qs = QpropertyGtype.objects.all()
+        filter = (
+            Q(quark_property_id__exact=self.id)
+        )
+        qs = qs.filter(filter)
+
+        # print("===================")
+        # print(self.subject_qid)
+        # print("===================")
+        # for qtypeProperty in qs:
+        #     qtypeProperty.subject_qid = self.subject_qid
+        return qs
+
 
 class QpropertyTypeType(DjangoObjectType):
     class Meta:
