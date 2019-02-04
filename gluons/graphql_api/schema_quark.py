@@ -26,10 +26,6 @@ class GluonTypeType(DjangoObjectType):
     )
 
     def resolve_gluons(self, info, first=None, skip=None, **kwargs):
-        print(self.side)
-        print(self.subject_qid)
-
-
         # from pprint import pprint
         # pprint(info.operation.selection_set.selections[0].arguments[0].value.value)
         # pprint(info.field_asts)
@@ -58,10 +54,25 @@ class GluonTypeType(DjangoObjectType):
         else:
             qs = Gluon.objects.all()
 
+        if (self.side == 0):
+            filter_original = (
+                Q(subject_quark_id__exact=self.subject_qid) | Q(object_quark_id__exact=self.subject_qid)
+            )
+        elif (self.side == 1):
+            filter_original = (
+                Q(subject_quark_id__exact=self.subject_qid)
+            )
+        elif (self.side == 2):
+            filter_original = (
+                Q(object_quark_id__exact=self.subject_qid)
+            )
+
         filter = (
-            Q(gluon_type_id__exact=self.id)
+            Q(gluon_type_id__exact=self.id) & filter_original
         )
         qs = qs.filter(filter)
+        # print(self.side)
+        # print(self.subject_qid)
 
         if skip:
             qs = qs[skip:]
@@ -223,9 +234,9 @@ gluon = graphene.Field(
 )
 gluons = graphene.List(
     GluonModelType,
-    relative=graphene.String(),
-    expectedSide=graphene.Int(),
-    side=graphene.Int(),
+    # relative=graphene.String(),
+    # expectedSide=graphene.Int(),
+    # side=graphene.Int(),
     first=graphene.Int(),
     skip=graphene.Int(),
     orderBy=graphene.String(),
@@ -328,11 +339,8 @@ class Query(graphene.ObjectType):
     def resolve_gluon(self, info, id=None, **kwargs):
         return Gluon.objects.get(id=id)
 
-    def resolve_gluons(self, info, relative=None, expectedSide=None, side=None, first=None, skip=None, **kwargs):
-        if side != expectedSide:
-            if side != 0:
-                return None
-
+    # def resolve_gluons(self, info, relative=None, expectedSide=None, side=None, first=None, skip=None, **kwargs):
+    def resolve_gluons(self, info, first=None, skip=None, **kwargs):
         # The value sent with the search parameter will be in the args variable
         orderBy = kwargs.get("orderBy", None)
         if orderBy:
