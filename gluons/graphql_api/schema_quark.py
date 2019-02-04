@@ -10,9 +10,26 @@ from django.db.models import Q
 
 
 
+class QuarkModelType2(DjangoObjectType):
+    class Meta:
+        model = Quark
+
 class GluonModelType(DjangoObjectType):
     class Meta:
         model = Gluon
+
+    target = graphene.Field(
+        QuarkModelType2
+    )
+
+    def resolve_target(self, info, **kwargs):
+        if self.subject_qid == self.subject_quark_id:
+            target_id = self.object_quark_id
+        else:
+            target_id = self.subject_quark_id
+
+        return Quark.objects.get(id=target_id)
+
 
 class GluonTypeType(DjangoObjectType):
     class Meta:
