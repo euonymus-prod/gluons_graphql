@@ -10,48 +10,137 @@ from django.db.models import Q
 
 
 
+class GluonModelType(DjangoObjectType):
+    class Meta:
+        model = Gluon
+
+class GluonTypeType(DjangoObjectType):
+    class Meta:
+        model = GluonType
+
+    gluons = graphene.List(
+        GluonModelType,
+        first=graphene.Int(),
+        skip=graphene.Int(),
+        orderBy=graphene.String(),
+    )
+
+    def resolve_gluons(self, info, first=None, skip=None, **kwargs):
+        print(self.side)
+        print(self.subject_qid)
+
+
+        # from pprint import pprint
+        # pprint(info.operation.selection_set.selections[0].arguments[0].value.value)
+        # pprint(info.field_asts)
+        # pprint(info.operation.selection_set.selections[0].selection_set.selections[2].selection_set.selections[1].selection_set.selections[0].selection_set.selections[1].selection_set.selections[0])
+
+        # pprint(info.parent_type._fields(GluonTypeType))
+
+
+
+        # Argument(
+        #     name=Name(value='id'),
+        #     value=StringValue(value='f34722f3-2686-4704-a56b-2c85d41407d1')
+        # )
+
+        # for attr in dir(info):
+        #     print (attr)
+
+        # if side != expectedSide:
+        #     if side != 0:
+        #         return None
+
+        # The value sent with the search parameter will be in the args variable
+        orderBy = kwargs.get("orderBy", None)
+        if orderBy:
+            qs = Gluon.objects.order_by(orderBy).reverse()
+        else:
+            qs = Gluon.objects.all()
+
+        filter = (
+            Q(gluon_type_id__exact=self.id)
+        )
+        qs = qs.filter(filter)
+
+        if skip:
+            qs = qs[skip:]
+
+        if first:
+            qs = qs[:first]
+
+        return qs
+
+
+class QpropertyGtypeType(DjangoObjectType):
+    class Meta:
+        model = QpropertyGtype
+
+    gluon_type = graphene.Field(
+        GluonTypeType,
+        id=graphene.String(),
+    )
+
+    def resolve_gluon_type(self, info, id=None, **kwargs):
+        qs = GluonType.objects.get(id=self.gluon_type_id)
+        qs.side = self.side
+        qs.subject_qid = self.subject_qid
+        return qs
+
+class QuarkPropertyType(DjangoObjectType):
+    class Meta:
+        model = QuarkProperty
+
+    having_gluon_types = graphene.List(
+        QpropertyGtypeType,
+    )
+
+    def resolve_having_gluon_types(self, info, **kwargs):
+        qs = QpropertyGtype.objects.all()
+        filter = (
+            Q(quark_property_id__exact=self.id)
+        )
+        qs = qs.filter(filter)
+
+        for item in qs:
+            item.subject_qid = self.subject_qid
+            
+        return qs
+
 class QtypePropertyType(DjangoObjectType):
     class Meta:
         model = QtypeProperty
 
-    # subject_qid = graphene.String(
-    #     subject_qid=graphene.String(),
-    # )
+    quark_property = graphene.Field(
+        QuarkPropertyType,
+        id=graphene.String(),
+    )
 
-    # def resolve_subject_qid(self, info, subject_qid=None, **kwargs):
-    #     # print('==================================')
-    #     print(subject_qid)
-    #     # for attr in dir(info):
-    #     #     print (attr)
-    #     # print('==================================')
-    #     return subject_qid
-
+    def resolve_quark_property(self, info, id=None, **kwargs):
+        qs = QuarkProperty.objects.get(id=self.quark_property_id)
+        qs.subject_qid = self.subject_qid
+        return qs
 
 class QuarkTypeType(DjangoObjectType):
     class Meta:
         model = QuarkType
 
-    # having_quark_properties = graphene.List(
-    #     QtypePropertyType,
-    # )
+    having_quark_properties = graphene.List(
+        QtypePropertyType,
+    )
 
-    # def resolve_having_quark_properties(self, info, **kwargs):
-    #     qs = QtypeProperty.objects.all()
-    #     filter = (
-    #         Q(quark_type_id__exact=self.id)
-    #     )
-    #     qs = qs.filter(filter)
+    def resolve_having_quark_properties(self, info, **kwargs):
+        qs = QtypeProperty.objects.all()
+        filter = (
+            Q(quark_type_id__exact=self.id)
+        )
+        qs = qs.filter(filter)
 
-    #     # for index, item in enumerate(qs):
-    #     #     print(vars(item))
-    #     #     qs[index] = item.subject_qid = self.subject_qid
-            
-    #     return qs
+        for item in qs:
+            item.subject_qid = self.subject_qid
 
+        return qs
 
-class GluonModelType(DjangoObjectType):
-    class Meta:
-        model = Gluon
 
 class QuarkModelType(DjangoObjectType):
     class Meta:
@@ -106,99 +195,6 @@ class QuarkModelType(DjangoObjectType):
 
         return qs
         
-
-class GluonTypeType(DjangoObjectType):
-    class Meta:
-        model = GluonType
-
-    gluons = graphene.List(
-        GluonModelType,
-        first=graphene.Int(),
-        skip=graphene.Int(),
-        orderBy=graphene.String(),
-    )
-
-    def resolve_gluons(self, info, first=None, skip=None, **kwargs):
-        print(self.side)
-
-
-        from pprint import pprint
-        pprint(info.operation.selection_set.selections[0].arguments[0].value.value)
-        # pprint(info.field_asts)
-        # pprint(info.operation.selection_set.selections[0].selection_set.selections[2].selection_set.selections[1].selection_set.selections[0].selection_set.selections[1].selection_set.selections[0])
-
-        # pprint(info.parent_type._fields(GluonTypeType))
-
-
-
-        # Argument(
-        #     name=Name(value='id'),
-        #     value=StringValue(value='f34722f3-2686-4704-a56b-2c85d41407d1')
-        # )
-
-        # for attr in dir(info):
-        #     print (attr)
-
-        # if side != expectedSide:
-        #     if side != 0:
-        #         return None
-
-        # The value sent with the search parameter will be in the args variable
-        orderBy = kwargs.get("orderBy", None)
-        if orderBy:
-            qs = Gluon.objects.order_by(orderBy).reverse()
-        else:
-            qs = Gluon.objects.all()
-
-        filter = (
-            Q(gluon_type_id__exact=self.id)
-        )
-        qs = qs.filter(filter)
-
-        if skip:
-            qs = qs[skip:]
-
-        if first:
-            qs = qs[:first]
-
-        return qs
-
-
-class QpropertyGtypeType(DjangoObjectType):
-    class Meta:
-        model = QpropertyGtype
-
-    gluon_type = graphene.Field(
-        GluonTypeType,
-        id=graphene.String(),
-    )
-
-    def resolve_gluon_type(self, info, id=None, **kwargs):
-        qs = GluonType.objects.get(id=self.gluon_type_id)
-        qs.side = self.side
-        return qs
-
-class QuarkPropertyType(DjangoObjectType):
-    class Meta:
-        model = QuarkProperty
-
-    having_gluon_types = graphene.List(
-        QpropertyGtypeType,
-    )
-
-    def resolve_having_gluon_types(self, info, **kwargs):
-        qs = QpropertyGtype.objects.all()
-        filter = (
-            Q(quark_property_id__exact=self.id)
-        )
-        qs = qs.filter(filter)
-
-        # print("===================")
-        # print(self.subject_qid)
-        # print("===================")
-        # for qtypeProperty in qs:
-        #     qtypeProperty.subject_qid = self.subject_qid
-        return qs
 
 
 class QpropertyTypeType(DjangoObjectType):
