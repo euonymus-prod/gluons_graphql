@@ -207,10 +207,13 @@ class QuarkModelType(DjangoObjectType):
         return qs
         
 
-
 class QpropertyTypeType(DjangoObjectType):
     class Meta:
         model = QpropertyType
+
+
+
+
 
 quark = graphene.Field(
     QuarkModelType,
