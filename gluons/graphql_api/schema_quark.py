@@ -49,6 +49,10 @@ class QuarkTypeType(DjangoObjectType):
         return qs
 
 
+class GluonModelType(DjangoObjectType):
+    class Meta:
+        model = Gluon
+
 class QuarkModelType(DjangoObjectType):
     class Meta:
         model = Quark
@@ -57,6 +61,12 @@ class QuarkModelType(DjangoObjectType):
         QuarkTypeType,
         id=graphene.String(),
     )
+    relatives = graphene.List(
+        GluonModelType,
+        first=graphene.Int(),
+        skip=graphene.Int(),
+        orderBy=graphene.String(),
+    )
 
     def resolve_quark_type(self, info, id=None, **kwargs):
         print(self.id)
@@ -64,9 +74,26 @@ class QuarkModelType(DjangoObjectType):
         qs.subject_qid = self.id
         return qs
 
-class GluonModelType(DjangoObjectType):
-    class Meta:
-        model = Gluon
+    def resolve_relatives(self, info, first=None, skip=None, **kwargs):
+        orderBy = kwargs.get("orderBy", None)
+        if orderBy:
+            qs = Gluon.objects.order_by(orderBy).reverse()
+        else:
+            qs = Gluon.objects.all()
+
+        filter = (
+            Q(subject_quark_id__exact=self.id) | Q(object_quark_id__exact=self.id)
+        )
+        qs = qs.filter(filter)
+
+        if skip:
+            qs = qs[skip:]
+
+        if first:
+            qs = qs[:first]
+
+        return qs
+        
 
 class GluonTypeType(DjangoObjectType):
     class Meta:

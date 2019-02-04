@@ -45,7 +45,7 @@ class Gluon(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     posted_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, related_name='posted_gluons', on_delete=models.CASCADE)
     last_modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, related_name='modified_gluons', on_delete=models.CASCADE)
-    gluon_type = models.ForeignKey('graphql_api.GluonType', related_name='gluons', on_delete=models.CASCADE)
+    gluon_type = models.ForeignKey('graphql_api.GluonType', null=True, related_name='gluons', on_delete=models.CASCADE)
     subject_quark = models.ForeignKey('graphql_api.Quark', related_name='havings', on_delete=models.CASCADE)
     object_quark = models.ForeignKey('graphql_api.Quark', related_name='belongings', on_delete=models.CASCADE)
 
