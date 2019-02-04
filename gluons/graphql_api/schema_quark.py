@@ -71,8 +71,6 @@ class GluonTypeType(DjangoObjectType):
             Q(gluon_type_id__exact=self.id) & filter_original
         )
         qs = qs.filter(filter)
-        # print(self.side)
-        # print(self.subject_qid)
 
         if skip:
             qs = qs[skip:]
@@ -80,6 +78,10 @@ class GluonTypeType(DjangoObjectType):
         if first:
             qs = qs[:first]
 
+        for item in qs:
+            item.side = self.side
+            item.subject_qid = self.subject_qid
+            
         return qs
 
 
