@@ -31,22 +31,22 @@ class QuarkTypeType(DjangoObjectType):
     class Meta:
         model = QuarkType
 
-    having_quark_properties = graphene.List(
-        QtypePropertyType,
-    )
+    # having_quark_properties = graphene.List(
+    #     QtypePropertyType,
+    # )
 
-    def resolve_having_quark_properties(self, info, **kwargs):
-        qs = QtypeProperty.objects.all()
-        filter = (
-            Q(quark_type_id__exact=self.id)
-        )
-        qs = qs.filter(filter)
+    # def resolve_having_quark_properties(self, info, **kwargs):
+    #     qs = QtypeProperty.objects.all()
+    #     filter = (
+    #         Q(quark_type_id__exact=self.id)
+    #     )
+    #     qs = qs.filter(filter)
 
-        # for index, item in enumerate(qs):
-        #     print(vars(item))
-        #     qs[index] = item.subject_qid = self.subject_qid
+    #     # for index, item in enumerate(qs):
+    #     #     print(vars(item))
+    #     #     qs[index] = item.subject_qid = self.subject_qid
             
-        return qs
+    #     return qs
 
 
 class GluonModelType(DjangoObjectType):
@@ -75,6 +75,18 @@ class QuarkModelType(DjangoObjectType):
         return qs
 
     def resolve_relatives(self, info, first=None, skip=None, **kwargs):
+        # Avoiding gluon_type Preparation
+        qs_props = QtypeProperty.objects.all().filter((Q(quark_type_id__exact=self.quark_type_id)))
+        q_properties = []
+        for qproperty in qs_props:
+            q_properties.append(qproperty.quark_property_id)
+
+        qs_gtype = QpropertyGtype.objects.all().filter((Q(quark_property_id__in=q_properties)))
+        g_types = []
+        for gtype in qs_gtype:
+            g_types.append(gtype.gluon_type_id)
+
+        # Start Retrieving
         orderBy = kwargs.get("orderBy", None)
         if orderBy:
             qs = Gluon.objects.order_by(orderBy).reverse()
@@ -84,7 +96,7 @@ class QuarkModelType(DjangoObjectType):
         filter = (
             Q(subject_quark_id__exact=self.id) | Q(object_quark_id__exact=self.id)
         )
-        qs = qs.filter(filter)
+        qs = qs.filter(filter).exclude(gluon_type__in=g_types)
 
         if skip:
             qs = qs[skip:]
@@ -108,10 +120,10 @@ class GluonTypeType(DjangoObjectType):
 
     def resolve_gluons(self, info, first=None, skip=None, **kwargs):
         print(self.side)
-        print(self.id)
+
 
         from pprint import pprint
-        # pprint(info.operation.selection_set.selections[0].arguments[0].value.value)
+        pprint(info.operation.selection_set.selections[0].arguments[0].value.value)
         # pprint(info.field_asts)
         # pprint(info.operation.selection_set.selections[0].selection_set.selections[2].selection_set.selections[1].selection_set.selections[0].selection_set.selections[1].selection_set.selections[0])
 
