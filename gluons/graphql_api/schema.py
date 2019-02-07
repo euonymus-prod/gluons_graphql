@@ -73,7 +73,7 @@ class GluonTypeType(DjangoObjectType):
             qs = qs[:first]
 
         for item in qs:
-            item.side = self.side
+            # item.side = self.side
             item.subject_qid = self.subject_qid
             
         return qs
@@ -199,6 +199,10 @@ class QuarkModelType(DjangoObjectType):
 
         if first:
             qs = qs[:first]
+
+        for item in qs:
+            # item.side = self.side
+            item.subject_qid = self.id
 
         return qs
         
