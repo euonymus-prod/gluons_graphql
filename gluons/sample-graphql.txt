@@ -1,0 +1,74 @@
+query {
+  quark (name: "人２"){
+    id
+    name
+    quarkType {
+      name
+      havingQuarkProperties {
+        quarkProperty {
+          name
+          havingGluonTypes {
+            side
+            gluonType {
+              name
+              gluons {
+                target {
+                  name
+                  quarkType {
+                    name
+                    havingQuarkProperties {
+                      quarkProperty {
+                        name
+                        havingGluonTypes {
+                          side
+                          gluonType {
+                            name
+                            gluons {
+                              target {
+                                name
+                                quarkType {
+                                  name
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    relatives {
+      gluonType {
+        name
+      }
+      target {
+        name
+        quarkType {
+          name
+          havingQuarkProperties {
+            quarkProperty {
+              name
+              havingGluonTypes {
+                side
+                gluonType {
+                  name
+                  gluons {
+                    target {
+                      name
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
