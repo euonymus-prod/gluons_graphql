@@ -10,16 +10,14 @@ from django.db.models import Q
 
 
 
-class QuarkModelType2(DjangoObjectType):
-    class Meta:
-        model = Quark
-
 class GluonModelType(DjangoObjectType):
     class Meta:
         model = Gluon
 
     target = graphene.Field(
-        QuarkModelType2
+        # QuarkModelType has to be lambda, because it's recursively called
+        # https://github.com/graphql-python/graphene-django/issues/52
+        lambda: QuarkModelType
     )
 
     def resolve_target(self, info, **kwargs):
