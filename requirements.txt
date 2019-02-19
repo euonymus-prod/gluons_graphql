@@ -1,4 +1,4 @@
-django
+django>=2.1.6
 graphene-django
 django-filter
 django-graphql-jwt
