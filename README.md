@@ -48,12 +48,10 @@ $ pip install -r requirements.txt
 $ source venv/bin/activate
 $ cd [path to repo]/gluons
 $ python manage.py runserver
-
+```
 
 ## How to Access
 
 Use Insomnia.
 You can make GraphQL call to
 http://localhost:8000/graphql/
-
-
