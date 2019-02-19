@@ -48,18 +48,19 @@ class GluonTypeType(DjangoObjectType):
         else:
             qs = Gluon.objects.all()
 
-        if (self.side == 0):
-            filter_original = (
-                Q(subject_quark_id__exact=self.subject_qid) | Q(object_quark_id__exact=self.subject_qid)
-            )
-        elif (self.side == 1):
-            filter_original = (
-                Q(subject_quark_id__exact=self.subject_qid)
-            )
-        elif (self.side == 2):
-            filter_original = (
-                Q(object_quark_id__exact=self.subject_qid)
-            )
+        if hasattr(self, 'side'):
+            if (self.side == 0):
+                filter_original = (
+                    Q(subject_quark_id__exact=self.subject_qid) | Q(object_quark_id__exact=self.subject_qid)
+                )
+            elif (self.side == 1):
+                filter_original = (
+                    Q(subject_quark_id__exact=self.subject_qid)
+                )
+            elif (self.side == 2):
+                filter_original = (
+                    Q(object_quark_id__exact=self.subject_qid)
+                )
 
         filter = (
             Q(gluon_type_id__exact=self.id) & filter_original
@@ -72,9 +73,10 @@ class GluonTypeType(DjangoObjectType):
         if first:
             qs = qs[:first]
 
-        for item in qs:
-            # item.side = self.side
-            item.subject_qid = self.subject_qid
+        if hasattr(self, 'subject_qid'):
+            for item in qs:
+                # item.side = self.side
+                item.subject_qid = self.subject_qid
             
         return qs
 
@@ -90,8 +92,10 @@ class QpropertyGtypeType(DjangoObjectType):
 
     def resolve_gluon_type(self, info, id=None, **kwargs):
         qs = GluonType.objects.get(id=self.gluon_type_id)
-        qs.side = self.side
-        qs.subject_qid = self.subject_qid
+        if hasattr(self, 'side'):
+            qs.side = self.side
+        if hasattr(self, 'subject_qid'):
+            qs.subject_qid = self.subject_qid
         return qs
 
 class QuarkPropertyType(DjangoObjectType):
@@ -109,8 +113,9 @@ class QuarkPropertyType(DjangoObjectType):
         )
         qs = qs.filter(filter)
 
-        for item in qs:
-            item.subject_qid = self.subject_qid
+        if hasattr(self, 'subject_qid'):
+            for item in qs:
+                item.subject_qid = self.subject_qid
             
         return qs
 
@@ -125,7 +130,8 @@ class QtypePropertyType(DjangoObjectType):
 
     def resolve_quark_property(self, info, id=None, **kwargs):
         qs = QuarkProperty.objects.get(id=self.quark_property_id)
-        qs.subject_qid = self.subject_qid
+        if hasattr(self, 'subject_qid'):
+            qs.subject_qid = self.subject_qid
         return qs
 
 class QuarkTypeType(DjangoObjectType):
@@ -143,8 +149,9 @@ class QuarkTypeType(DjangoObjectType):
         )
         qs = qs.filter(filter)
 
-        for item in qs:
-            item.subject_qid = self.subject_qid
+        if hasattr(self, 'subject_qid'):
+            for item in qs:
+                item.subject_qid = self.subject_qid
 
         return qs
 
