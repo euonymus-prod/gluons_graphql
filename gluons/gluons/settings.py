@@ -138,6 +138,9 @@ STATIC_URL = '/static/'
 
 GRAPHENE = {
     'SCHEMA': 'gluons.schema.schema',
+    'MIDDLEWARE': [
+        'graphql_jwt.middleware.JSONWebTokenMiddleware',
+    ],
 }
 
 AUTHENTICATION_BACKENDS = [
