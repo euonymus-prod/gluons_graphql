@@ -106,6 +106,13 @@ class QuarkPropertyType(DjangoObjectType):
         QpropertyGtypeType,
     )
 
+    targets = graphene.List(
+        GluonModelType,
+        first=graphene.Int(),
+        skip=graphene.Int(),
+        orderBy=graphene.String(),
+    )
+
     def resolve_having_gluon_types(self, info, **kwargs):
         qs = QpropertyGtype.objects.all()
         filter = (
@@ -118,6 +125,72 @@ class QuarkPropertyType(DjangoObjectType):
                 item.subject_qid = self.subject_qid
             
         return qs
+
+    def resolve_targets(self, info, first=None, skip=None, **kwargs):
+        # prepare target gluon_types
+        qprop_gtypes = QpropertyGtype.objects.all()
+        filter = (
+            Q(quark_property_id__exact=self.id)
+        )
+        qprop_gtypes = qprop_gtypes.filter(filter)
+
+        # The value sent with the search parameter will be in the args variable
+        orderBy = kwargs.get("orderBy", None)
+        if orderBy:
+            qs_base = Gluon.objects.order_by(orderBy).reverse()
+        else:
+            qs_base = Gluon.objects.all()
+
+        # QuerySets Merge Samples
+        #   sample type1: https://stackoverflow.com/questions/431628/how-to-combine-2-or-more-querysets-in-a-django-view
+        #   sample type2: https://simpleisbetterthancomplex.com/tips/2016/06/20/django-tip-5-how-to-merge-querysets.html
+        # from itertools import chain
+        for gtype in qprop_gtypes:
+            if (gtype.side == 0):
+                filter_original = (
+                    Q(subject_quark_id__exact=self.subject_qid) | Q(object_quark_id__exact=self.subject_qid)
+                )
+            elif (gtype.side == 1):
+                filter_original = (
+                    Q(subject_quark_id__exact=self.subject_qid)
+                )
+            elif (gtype.side == 2):
+                filter_original = (
+                    Q(object_quark_id__exact=self.subject_qid)
+                )
+
+            filter = (
+                Q(gluon_type_id__exact=gtype.gluon_type_id) & filter_original
+            )
+            qs_tmp = qs_base.filter(filter)
+
+            if skip:
+                qs_tmp = qs_tmp[skip:]
+
+            if first:
+                qs_tmp = qs_tmp[:first]
+
+            # if 'result_list' in locals():
+            #     result_list = list(chain(result_list, qs_tmp))
+            #     # result_list = sorted(
+            #     #     chain(result_list, qs_tmp),
+            #     #     key=lambda instance: instance.start)
+            # else:
+            #     result_list = qs_tmp
+            if 'result_list' in locals():
+                result_list = result_list | qs_tmp
+            else:
+                result_list = qs_tmp
+
+        result_list = result_list.distinct().order_by('-start')
+
+        if hasattr(self, 'subject_qid'):
+            for item in result_list:
+                # item.side = self.side
+                item.subject_qid = self.subject_qid
+
+        return result_list
+
 
 class QtypePropertyType(DjangoObjectType):
     class Meta:
@@ -172,7 +245,6 @@ class QuarkModelType(DjangoObjectType):
     )
 
     def resolve_quark_type(self, info, id=None, **kwargs):
-        print(self.id)
         qs = QuarkType.objects.get(id=self.quark_type_id)
         qs.subject_qid = self.id
         return qs
