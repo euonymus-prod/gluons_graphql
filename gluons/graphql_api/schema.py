@@ -175,7 +175,8 @@ class QuarkModelType(DjangoObjectType):
         # Start Retrieving
         orderBy = kwargs.get("orderBy", None)
         if orderBy:
-            qs = Gluon.objects.order_by(orderBy).reverse()
+            # qs = Gluon.objects.order_by(orderBy).reverse()
+            qs = Gluon.objects.order_by(F(orderBy).desc(nulls_last=True))
         else:
             qs = Gluon.objects.all()
 
