@@ -1,5 +1,5 @@
 query {
-  quark (name: "人２"){
+  quark (name: "東京大学"){
     id
     name
     quarkType {
@@ -7,32 +7,26 @@ query {
       havingQuarkProperties {
         quarkProperty {
           name
-          havingGluonTypes {
-            side
+          targets (first:100, orderBy:"start") {
             gluonType {
               name
-              gluons {
-                target {
-                  name
-                  quarkType {
+            }
+            start
+            relation
+            target {
+              name
+              quarkType {
+                name
+                havingQuarkProperties {
+                  quarkProperty {
                     name
-                    havingQuarkProperties {
-                      quarkProperty {
+                    targets (orderBy:"start") {
+                      gluonType {
                         name
-                        havingGluonTypes {
-                          side
-                          gluonType {
-                            name
-                            gluons {
-                              target {
-                                name
-                                quarkType {
-                                  name
-                                }
-                              }
-                            }
-                          }
-                        }
+                      }
+                      relation
+                      target {
+                        name
                       }
                     }
                   }
@@ -44,9 +38,7 @@ query {
       }
     }
     relatives {
-      gluonType {
-        name
-      }
+      relation
       target {
         name
         quarkType {
@@ -54,15 +46,13 @@ query {
           havingQuarkProperties {
             quarkProperty {
               name
-              havingGluonTypes {
-                side
+              targets (orderBy:"start") {
                 gluonType {
                   name
-                  gluons {
-                    target {
-                      name
-                    }
-                  }
+                }
+                relation
+                target {
+                  name
                 }
               }
             }
@@ -72,3 +62,5 @@ query {
     }
   }
 }
+
+
